@@ -25,7 +25,7 @@ import AuthenticationServices
 
 @available(iOS 12.0, macOS 10.15, *)
 final class AuthenticationServicesSession: SessionTransaction {
-
+    
     init(authorizeURL: URL,
          redirectURL: URL,
          state: String? = nil,
@@ -38,34 +38,39 @@ final class AuthenticationServicesSession: SessionTransaction {
                    handler: handler,
                    logger: logger,
                    callback: callback)
-
-        let authSession = ASWebAuthenticationSession(url: authorizeURL,
-                                                     callbackURLScheme: self.redirectURL.scheme) { [weak self] in
-            guard $1 == nil, let callbackURL = $0 else {
-                let authError = $1 ?? WebAuthError.unknownError
-                if case ASWebAuthenticationSessionError.canceledLogin = authError {
-                    self?.callback(.failure(error: WebAuthError.userCancelled))
-                } else {
-                    self?.callback(.failure(error: authError))
-                }
-                return TransactionStore.shared.clear()
-            }
-            _ = TransactionStore.shared.resume(callbackURL)
-        }
-
-        #if swift(>=5.1)
-        if #available(iOS 13.0, *) {
-            authSession.presentationContextProvider = self
-            authSession.prefersEphemeralWebBrowserSession = ephemeralSession
-        }
-        #endif
-
-        self.authSession = authSession
-        authSession.start()
+        
+        /*  let authSession = ASWebAuthenticationSession(url: authorizeURL,
+         callbackURLScheme: self.redirectURL.scheme) { [weak self] in
+         guard $1 == nil, let callbackURL = $0 else {
+         let authError = $1 ?? WebAuthError.unknownError
+         if case ASWebAuthenticationSessionError.canceledLogin = authError {
+         self?.callback(.failure(error: WebAuthError.userCancelled))
+         } else {
+         self?.callback(.failure(error: authError))
+         }
+         return TransactionStore.shared.clear()
+         }
+         _ = TransactionStore.shared.resume(callbackURL)
+         }
+         
+         #if swift(>=5.1)
+         if #available(iOS 13.0, *) {
+         authSession.presentationContextProvider = self
+         authSession.prefersEphemeralWebBrowserSession = ephemeralSession
+         }
+         #endif
+         
+         self.authSession = authSession
+         authSession.start()
+         */
+       let vc = SFSafariViewController(url: authorizeURL, entersReaderIfAvailable: true)
+       present(vc, animated: true)
     }
-
+    
 }
 
 @available(iOS 12.0, macOS 10.15, *)
 extension ASWebAuthenticationSession: AuthSession {}
 #endif
+
+
